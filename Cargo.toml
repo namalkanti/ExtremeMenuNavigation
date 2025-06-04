@@ -1,0 +1,11 @@
+[package]
+name = "ExtremeMenuNavigation"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = "0.13"
+
+[dev-dependencies]
+rstest = "0.12"
+mockall = "0.11"
