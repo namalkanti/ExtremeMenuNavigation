@@ -1,5 +1,7 @@
-use bevy::prelude::*;
-use bevy::ui::Interaction;
+use bevy::{
+    ecs::hierarchy::ChildSpawnerCommands,
+    prelude::*,
+};
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 enum AppState {
@@ -14,6 +16,9 @@ struct MenuButton {
     target_state: AppState,
 }
 
+#[derive(Component)]
+struct MainMenuRoot;
+
 fn main() {
     App::new()
         .add_plugins(DefaultPlugins)
@@ -25,81 +30,61 @@ fn main() {
 }
 
 fn setup_menu(mut commands: Commands, asset_server: Res<AssetServer>) {
-    commands.spawn(Camera2dBundle::default());
+    commands.spawn(Camera2d);
 
     let font = asset_server.load("fonts/FiraSans-Bold.ttf");
-    let button_style = Style {
-        width: Val::Px(200.0),
-        height: Val::Px(65.0),
-        margin: UiRect::all(Val::Px(10.0)),
-        justify_content: JustifyContent::Center,
-        align_items: AlignItems::Center,
-        ..default()
-    };
-
-    let text_style = TextStyle {
-        font,
-        font_size: 30.0,
-        color: Color::WHITE,
-    };
 
     commands
         .spawn((
-            NodeBundle {
-                style: Style {
-                    flex_direction: FlexDirection::Column,
-                    align_items: AlignItems::Center,
-                    justify_content: JustifyContent::Center,
-                    width: Val::Percent(100.0),
-                    height: Val::Auto,
-                    ..default()
-                },
+            Name::new("MainMenuRoot"),
+            MainMenuRoot,
+            Node {
+                width: Val::Percent(100.0),
+                height: Val::Percent(100.0),
+                flex_direction: FlexDirection::Column,
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
                 ..default()
             },
-            Name::new("MainMenuRoot"),
         ))
-        .with_children(|parent| {
-            parent.spawn((
-                ButtonBundle {
-                    style: button_style.clone(),
-                    background_color: BackgroundColor(Color::DARK_GRAY),
-                    ..default()
-                },
-                MenuButton {
-                    target_state: AppState::InGame,
-                },
-            ))
-            .with_children(|p| {
-                p.spawn(TextBundle::from_section("Play", text_style.clone()));
-            });
+        .with_children(|parent: &mut ChildSpawnerCommands| {
+            spawn_menu_button(parent, "Play", AppState::InGame, &font);
+            spawn_menu_button(parent, "Settings", AppState::Settings, &font);
+            spawn_menu_button(parent, "Quit", AppState::MainMenu, &font);
+        });
+}
 
-            parent.spawn((
-                ButtonBundle {
-                    style: button_style.clone(),
-                    background_color: BackgroundColor(Color::DARK_GRAY),
+fn spawn_menu_button(
+    parent: &mut ChildSpawnerCommands,
+    label: &str,
+    target_state: AppState,
+    font: &Handle<Font>,
+) {
+    parent
+        .spawn((
+            Button,
+            MenuButton { target_state },
+            Node {
+                width: Val::Px(200.0),
+                height: Val::Px(65.0),
+                margin: UiRect::all(Val::Px(10.0)),
+                justify_content: JustifyContent::Center,
+                align_items: AlignItems::Center,
+                border_radius: BorderRadius::all(Val::Px(12.0)),
+                ..default()
+            },
+            BackgroundColor(Color::srgb(0.2, 0.2, 0.2)),
+        ))
+        .with_children(|button: &mut ChildSpawnerCommands| {
+            button.spawn((
+                Text::new(label),
+                TextFont {
+                    font: font.clone(),
+                    font_size: 30.0,
                     ..default()
                 },
-                MenuButton {
-                    target_state: AppState::Settings,
-                },
-            ))
-            .with_children(|p| {
-                p.spawn(TextBundle::from_section("Settings", text_style.clone()));
-            });
-
-            parent.spawn((
-                ButtonBundle {
-                    style: button_style.clone(),
-                    background_color: BackgroundColor(Color::DARK_GRAY),
-                    ..default()
-                },
-                MenuButton {
-                    target_state: AppState::default(), // Stay in MainMenu, you can add exit logic later
-                },
-            ))
-            .with_children(|p| {
-                p.spawn(TextBundle::from_section("Quit", text_style));
-            });
+                TextColor(Color::WHITE),
+            ));
         });
 }
 
@@ -121,8 +106,8 @@ fn handle_button_click(
     }
 }
 
-fn cleanup_menu(mut commands: Commands, root_query: Query<Entity, With<Name>>) {
+fn cleanup_menu(mut commands: Commands, root_query: Query<Entity, With<MainMenuRoot>>) {
     for entity in &root_query {
-        commands.entity(entity).despawn_recursive();
+        commands.entity(entity).despawn();
     }
 }
