@@ -1,7 +1,6 @@
-use bevy::{
-    ecs::hierarchy::ChildSpawnerCommands,
-    prelude::*,
-};
+use bevy::{ecs::hierarchy::ChildSpawnerCommands, prelude::*};
+
+mod api;
 
 #[derive(States, Debug, Clone, Eq, PartialEq, Hash, Default)]
 enum AppState {
