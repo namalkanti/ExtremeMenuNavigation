@@ -24,7 +24,7 @@ pub enum Event{
 ///
 /// These are actions the story wants to trigger in the game. Keep them semantic
 /// and minimal; add variants only when the story truly needs to cause an effect.
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Command {
     SetFriendInLobby(bool),
     SetFriendReady(bool),
