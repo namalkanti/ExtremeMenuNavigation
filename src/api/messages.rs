@@ -15,7 +15,7 @@ impl Default for GameSnapshot {
 /// just happened, without requiring the story to reconstruct full state from
 /// an event history (it can read `GameSnapshot` for current truth).
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub enum GameSignal {
+pub enum Event{
     Started,
     NetworkToggled,
 }
